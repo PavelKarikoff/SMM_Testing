@@ -1,5 +1,5 @@
 """
-Генерация теста из текста лекции через GPT-4o-mini (Этап 6).
+Генерация теста из текста лекции через OpenAI-совместимый API (Этап 6).
 
 generate_test(text, lecture_title) -> dict в формате TestIn:
   {
@@ -18,9 +18,11 @@ generate_test(text, lecture_title) -> dict в формате TestIn:
   • test_loader   — «проверить и записать в БД».
 
 Два режима (config.AI_MOCK):
-  • AI_MOCK=True  — возвращает фиксированный демо-тест без вызова OpenAI
+  • AI_MOCK=True  — возвращает фиксированный демо-тест без вызова API
     (разработка/демонстрация без API-ключа);
-  • AI_MOCK=False — реальный вызов OpenAI (требует config.OPENAI_API_KEY).
+  • AI_MOCK=False — реальный вызов модели провайдера (требует
+    config.OPENAI_API_KEY). Провайдер выбирается переменными
+    OPENAI_BASE_URL + OPENAI_MODEL (OpenAI, DeepSeek, proxyapi.ru, …).
 """
 import json
 import logging
@@ -38,7 +40,7 @@ class AiGenerationError(Exception):
     """LLM вернула пустой или не-JSON ответ."""
 
 
-# --- Системный промпт для GPT-4o-mini ---------------------------------------
+# --- Системный промпт для модели ИИ (OpenAI-совместимый провайдер) -----------
 # Требования продиктованы форматом TestIn (app/schemas.py):
 #   • ровно 10 вопросов, номер 1..10 без пропусков/повторов;
 #   • ровно 4 easy + 4 medium + 2 logic;
@@ -148,7 +150,7 @@ def generate_test(text: str, lecture_title: str) -> dict:
     """
     if config.AI_MOCK:
         logger.warning(
-            "AI_MOCK=1: генерация возвращает демо-тест без вызова OpenAI "
+            "AI_MOCK=1: генерация возвращает демо-тест без вызова API "
             "(lecture_title=%r).", lecture_title
         )
         return _mock_test(lecture_title)
@@ -159,16 +161,22 @@ def generate_test(text: str, lecture_title: str) -> dict:
             "Добавьте ключ в .env или включите AI_MOCK=1."
         )
 
-    return _call_openai(text, lecture_title)
+    return _call_llm(text, lecture_title)
 
 
-def _call_openai(text: str, lecture_title: str) -> dict:
-    """Реальный вызов GPT-4o-mini. Импорт openai — здесь, чтобы не тащить "
-    зависимость в мок-режим (и при отсутствии пакета мок всё равно работает)."""
+def _call_llm(text: str, lecture_title: str) -> dict:
+    """Реальный вызов модели через OpenAI-совместимый SDK. Провайдер задаётся
+    config.OPENAI_BASE_URL + config.OPENAI_MODEL (OpenAI, DeepSeek и т.д.).
+    Импорт openai — здесь, чтобы не тащить зависимость в мок-режим
+    (и при отсутствии пакета мок всё равно работает)."""
     from openai import OpenAI
 
     # timeout защищает от «вечного зависания» запроса (сеть, зависание модели).
-    client = OpenAI(api_key=config.OPENAI_API_KEY, timeout=60.0)
+    client = OpenAI(
+        api_key=config.OPENAI_API_KEY,
+        base_url=config.OPENAI_BASE_URL,
+        timeout=60.0,
+    )
     user_prompt = (
         f"Название лекции: {lecture_title}.\n\n"
         f"Текст лекции (извлечён из PDF):\n{text}\n\n"
@@ -186,18 +194,20 @@ def _call_openai(text: str, lecture_title: str) -> dict:
             ],
         )
     except Exception as e:
-        raise AiGenerationError(f"Ошибка вызова OpenAI: {e}") from e
+        raise AiGenerationError(
+            f"Ошибка вызова модели {config.OPENAI_MODEL} ({config.OPENAI_BASE_URL}): {e}"
+        ) from e
 
     # Модель может вернуть пустой choices (content-filter, лимит, сбой) —
     # не даём IndexError всплыть как 500, превращаем в понятную ошибку генерации.
     if not resp.choices:
-        raise AiGenerationError("OpenAI вернул пустой список choices (нет ответа модели).")
+        raise AiGenerationError("Модель вернула пустой список choices (нет ответа).")
     try:
         content = resp.choices[0].message.content
     except (AttributeError, IndexError) as e:
-        raise AiGenerationError(f"OpenAI вернул некорректный ответ: {e}") from e
+        raise AiGenerationError(f"Модель вернула некорректный ответ: {e}") from e
     if not content or not content.strip():
-        raise AiGenerationError("OpenAI вернул пустой ответ.")
+        raise AiGenerationError("Модель вернула пустой ответ.")
 
     try:
         data = json.loads(content)
@@ -205,7 +215,7 @@ def _call_openai(text: str, lecture_title: str) -> dict:
         # Показываем первые символы, чтобы понять, что вернулось.
         snippet = (content[:200] + "…") if len(content) > 200 else content
         raise AiGenerationError(
-            f"OpenAI вернул не-JSON: {e}. Начало ответа: {snippet}"
+            f"Модель вернула не-JSON: {e}. Начало ответа: {snippet}"
         ) from e
 
     # Гарантируем поле lecture_title, если модель его пропустила.

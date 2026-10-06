@@ -497,8 +497,9 @@ async def upload_pdf(
 ):
     """Загрузка PDF-презентации: сохранение файла + создание draft-теста без вопросов.
 
-    Вопросы генерируются из PDF на Этапе 6 (AI, GPT-4o-mini). Пока тест хранится
-    как черновик с pdf_path, открыть его студентам нельзя (нет 10 вопросов).
+    Вопросы генерируются из PDF на Этапе 6 (модель настраивается OPENAI_BASE_URL
+    + OPENAI_MODEL). Пока тест хранится как черновик с pdf_path, открыть его
+    студентам нельзя (нет 10 вопросов).
     """
     redir = _require_teacher(request)
     if redir:
@@ -608,6 +609,7 @@ async def teacher_test_preview(test_id: int, request: Request, db: Session = Dep
             "can_open": can_open,
             "questions_per_test": config.QUESTIONS_PER_TEST,
             "ai_mock": config.AI_MOCK,
+            "ai_model": config.OPENAI_MODEL,
             "scheduled_at_msk": scheduled_at_msk,
             "scheduled_at_value": scheduled_at_value,
             "schedule_tz": config.SCHEDULE_TZ,
@@ -776,7 +778,7 @@ async def test_unschedule(test_id: int, request: Request, db: Session = Depends(
 
 @router.post("/teacher/test/{test_id}/generate")
 async def test_generate(test_id: int, request: Request, db: Session = Depends(get_db)):
-    """Сгенерировать 10 вопросов из PDF-презентации (GPT-4o-mini / мок).
+    """Сгенерировать 10 вопросов из PDF-презентации (модель ИИ / мок).
 
     Защита:
       • только для вошедшего преподавателя;
@@ -828,7 +830,7 @@ async def test_generate(test_id: int, request: Request, db: Session = Depends(ge
     except Exception as e:
         return back(f"Непредвиденная ошибка генерации: {e}")
 
-    mode = "мок" if config.AI_MOCK else "GPT-4o-mini"
+    mode = "мок" if config.AI_MOCK else config.OPENAI_MODEL
     _flash(request, f"Сгенерировано {inserted} вопросов из PDF ({mode}).")
     return RedirectResponse(f"/teacher/test/{test_id}", status_code=303)
 

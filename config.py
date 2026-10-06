@@ -66,12 +66,18 @@ DEMO_AUTOSEED = os.getenv("DEMO_AUTOSEED", "0") == "1"
 _DEFAULT_TEACHER_PASSWORD = "changeme"
 TEACHER_PASSWORD = os.getenv("TEACHER_PASSWORD", _DEFAULT_TEACHER_PASSWORD)
 
-# === OpenAI (генерация тестов из PDF) ===
+# === AI-провайдер генерации тестов из PDF (OpenAI-совместимый API) ===
+# Работает с любым провайдером, говорящим по протоколу OpenAI (SDK openai):
+#   • OpenAI:  OPENAI_BASE_URL=https://api.openai.com/v1      · модель gpt-4o-mini
+#   • DeepSeek: OPENAI_BASE_URL=https://api.deepseek.com      · модель deepseek-chat
+#   • proxyapi.ru (GPT за рубли, без VPN): тот же паттерн base_url + своя модель.
+# Достаточно трёх переменных окружения — код менять не нужно.
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 # Мок-режим: AI_MOCK=1 — генерация возвращает фиксированный демо-тест без
-# вызова OpenAI (удобно для разработки/демонстрации без API-ключа).
-# AI_MOCK=0 + заполненный OPENAI_API_KEY — реальный вызов GPT-4o-mini.
+# вызова API (удобно для разработки/демонстрации без API-ключа).
+# AI_MOCK=0 + заполненный OPENAI_API_KEY — реальный вызов модели провайдера.
 AI_MOCK = os.getenv("AI_MOCK", "1") == "1"
 # Лимит символов извлекаемого из PDF текста — защита от аномально больших
 # файлов (GPT-4o-mini держит 128k токенов, но презентации короткие).

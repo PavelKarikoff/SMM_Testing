@@ -63,7 +63,7 @@
         </button>
       </form>
       <span class="muted" style="margin-left:.5rem">
-        {% if ai_mock %}мок-режим (демо-тест без вызова API){% else %}GPT-4o-mini · 10 вопросов 4/4/2{% endif %}
+        {% if ai_mock %}мок-режим (демо-тест без вызова API){% else %}{{ ai_model }} · 10 вопросов 4/4/2{% endif %}
         {% if test.questions %}· вопросы будут заменены{% endif %}
       </span>
     {% endif %}
@@ -129,7 +129,7 @@
   <div class="empty">
     <p>В тесте нет вопросов.</p>
     {% if test.source.value == "pdf" %}
-      <p class="muted">Вопросы будут сгенерированы из PDF на этапе 6 (GPT-4o-mini).</p>
+      <p class="muted">Вопросы будут сгенерированы из PDF на этапе 6 (модель {{ ai_model }}).</p>
     {% endif %}
   </div>
   {% endif %}
