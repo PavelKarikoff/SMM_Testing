@@ -181,7 +181,9 @@ def save_answer(
         student_answer=chosen_index,
         is_correct=is_correct,
     )
-    db.add(answer)
+    # append, а не add: если attempt.answers уже загружена в этой сессии,
+    # add() оставит коллекцию устаревшей и _recompute_score не увидит новый ответ
+    attempt.answers.append(answer)
     db.flush()
     return answer
 
