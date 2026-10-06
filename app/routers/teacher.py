@@ -655,6 +655,35 @@ async def test_close(test_id: int, request: Request, db: Session = Depends(get_d
     return RedirectResponse(f"/teacher/test/{test_id}", status_code=303)
 
 
+@router.post("/teacher/test/{test_id}/delete")
+async def test_delete(test_id: int, request: Request, db: Session = Depends(get_db)):
+    """Удалить тест безвозвратно — вместе с вопросами и попытками студентов.
+
+    Каскад ORM: у Test.questions и Test.attempts стоит cascade="all,
+    delete-orphan", у Attempt.answers — тоже, поэтому db.delete(test) чистит
+    всё дерево разом, отдельные DELETE не нужны. Защита от случайного клика —
+    confirm() на кнопке; flash подтверждает фактическое удаление с числом
+    затронутых попыток.
+    """
+    redir = _require_teacher(request)
+    if redir:
+        return redir
+
+    test = db.get(Test, test_id)
+    if test is None:
+        raise HTTPException(404, "Тест не найден")
+
+    title = test.lecture_title
+    attempts_n = len(test.attempts)
+    db.delete(test)
+    db.commit()
+    msg = f"Тест «{title}» удалён (вопросы и попытки — тоже)."
+    if attempts_n:
+        msg += f" Удалено попыток: {attempts_n}."
+    _flash(request, msg)
+    return RedirectResponse("/teacher", status_code=303)
+
+
 # === Расписание (Этап 7): scheduled → автооткрытие по времени ===
 
 # Допуск по времени: разрешаем планировать «в прошлое» не дальше чем на минуту,

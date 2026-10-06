@@ -104,6 +104,10 @@
         <td>{{ t._attempts_count }}</td>
         <td class="action-links">
           <a href="/teacher/test/{{ t.id }}">Предпросмотр</a>
+          <form method="post" action="/teacher/test/{{ t.id }}/delete" style="display:inline"
+                onsubmit="return confirm('Удалить тест безвозвратно — вместе с вопросами и попытками студентов?')">
+            <button class="btn btn-danger" type="submit" title="Удалить тест полностью">🗑</button>
+          </form>
         </td>
       </tr>
       {% endfor %}
@@ -123,6 +127,7 @@
     <p><strong>Открыть студентам.</strong> Откройте тест → «Открыть доступ». Нужны 10 вопросов.</p>
     <p><strong>Открыть по расписанию.</strong> Откройте тест → блок «Расписание» → выберите дату/время (МСК) → «Запланировать открытие». Откроется само.</p>
     <p><strong>Закрыть тест.</strong> Откройте тест → «Закрыть тест». Попытки сохраняются.</p>
+    <p><strong>Удалить тест.</strong> В списке тестов кнопка «🗑» (или «🗑 Удалить тест» на странице теста). Действие необратимо — удаляются и попытки.</p>
     <p><strong>Прогресс студентов.</strong> Кнопка «Аналитика»: ошибки по сложности + таблица попыток с разбором.</p>
     <p><strong>Допуск к зачёту.</strong> Кнопка «Допуск»: кто готов ({{ tests_required }} тестов, ≥&nbsp;{{ correct_required }}/{{ total_questions }} правильных, лучшая попытка). Там же — экспорт в CSV.</p>
     <p class="muted">Подробнее — на странице <a href="/teacher/guide" target="_blank" rel="noopener">Инструкция</a>.</p>

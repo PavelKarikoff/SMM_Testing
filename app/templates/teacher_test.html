@@ -49,6 +49,12 @@
     {% if test.status.value not in ("open", "closed") %}
       <a href="/teacher/test/{{ test.id }}/edit" class="btn btn-outline">✎ Редактировать вопросы</a>
     {% endif %}
+    {# Удаление: подтверждение confirm() обязательно — действие необратимо;
+       в тексте предупреждаем, что стираются и попытки студентов. #}
+    <form method="post" action="/teacher/test/{{ test.id }}/delete" style="margin:0"
+          onsubmit="return confirm('Удалить тест безвозвратно — вместе с вопросами и попытками студентов?')">
+      <button class="btn btn-danger" type="submit" title="Удалить тест полностью">🗑 Удалить тест</button>
+    </form>
     {% if test.source.value == "pdf" %}
       <form method="post" action="/teacher/test/{{ test.id }}/generate" style="margin:0" data-disable-on-submit>
         <button class="btn" type="submit"
