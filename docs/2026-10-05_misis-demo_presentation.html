@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>SMM Testing — демо для преподавателей кафедры · НИТУ МИСИС</title>
+<style>
+  :root{
+    --ink:#0A1E64;
+    --blue:#0541F0;
+    --coral:#FA2E53;
+    --yellow:#F6E14F;
+    --green:#2f7a1f;
+    --bg:#F9F9FF;
+    --panel:#eef1ff;
+    --muted:#5b6478;
+    --line:#d6dbf0;
+  }
+
+  @page{ size: 297mm 167mm; margin: 0; }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{ font-family:"Helvetica Neue","Helvetica","Arial",sans-serif; color:var(--ink); hyphens:none; }
+
+  .slide{
+    width:297mm; height:167mm;
+    padding:20mm 26mm 16mm 26mm;
+    position:relative;
+    page-break-after:always;
+    overflow:hidden;
+    background:var(--bg);
+  }
+  .slide:last-child{ page-break-after:auto; }
+
+  .slide.dark{ background:var(--ink); color:#fff; }
+  .slide.dark .muted{ color:#9aa6cc; }
+  .slide.dark .footer{ color:#5b6aa0; border-color:#22347f; }
+
+  .kicker{
+    text-transform:uppercase; letter-spacing:2.5px;
+    font-size:11px; font-weight:700; color:var(--blue); margin-bottom:10px;
+  }
+  .slide.dark .kicker{ color:var(--yellow); }
+
+  h1{ font-size:42px; font-weight:800; line-height:1.1; letter-spacing:-.5px; }
+  h2{ font-size:30px; font-weight:800; line-height:1.12; letter-spacing:-.3px; margin-bottom:14px; }
+  h3{ font-size:17px; font-weight:700; }
+  .lead{ font-size:15.5px; line-height:1.5; color:var(--muted); max-width:200mm; }
+  .muted{ color:var(--muted); }
+
+  .accentbar{ width:54px; height:5px; background:var(--coral); border-radius:3px; margin-bottom:16px; }
+
+  .footer{
+    position:absolute; left:26mm; right:26mm; bottom:8mm;
+    display:flex; justify-content:space-between;
+    font-size:10px; color:var(--muted);
+    border-top:1px solid var(--line); padding-top:5px;
+  }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  .grid4{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px; }
+
+  .card{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .card.tint{ background:var(--panel); border-color:#cdd5f5; }
+  .card .ico{
+    width:30px; height:30px; border-radius:8px; background:var(--ink);
+    color:var(--yellow); font-weight:800; display:flex; align-items:center; justify-content:center;
+    font-size:15px; margin-bottom:9px;
+  }
+
+  ul.clean{ list-style:none; }
+  ul.clean li{ font-size:14px; line-height:1.45; padding:5px 0 5px 20px; position:relative; }
+  ul.clean li::before{ content:""; position:absolute; left:0; top:11px; width:7px; height:7px; border-radius:2px; background:var(--blue); }
+  ul.clean li.coral::before{ background:var(--coral); }
+  ul.clean li.green::before{ background:var(--green); }
+
+  .num{ font-size:46px; font-weight:800; color:var(--blue); line-height:1; letter-spacing:-1px; }
+  .num.coral{ color:var(--coral); }
+  .num.yellow{ color:var(--ink); }
+  .numlabel{ font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin-top:6px; }
+
+  table.tech{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  table.tech th{
+    text-align:left; padding:8px 10px; background:var(--ink); color:#fff;
+    font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:1px;
+  }
+  table.tech td{ padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  table.tech tr:nth-child(even) td{ background:#f4f6ff; }
+  table.tech td:first-child{ font-weight:700; color:var(--ink); white-space:nowrap; }
+  table.tech td:nth-child(2){ font-weight:600; }
+
+  .tag{ display:inline-block; padding:3px 9px; border-radius:20px; font-size:10.5px; font-weight:700; letter-spacing:.5px; }
+  .tag.easy{ background:#e7f6e1; color:var(--green); }
+  .tag.med{ background:#fff4d6; color:#8a6d12; }
+  .tag.logic{ background:#fde7ec; color:var(--coral); }
+
+  .arch{ display:flex; align-items:stretch; gap:10px; margin-top:8px; }
+  .arch .col{ flex:1; display:flex; flex-direction:column; gap:8px; }
+  .node{ border-radius:10px; padding:11px 12px; text-align:center; font-size:13px; font-weight:700; color:#fff; }
+  .arrow{ align-self:center; font-size:18px; color:var(--blue); font-weight:800; }
+  .node.client{ background:#444; }
+  .node.app{ background:var(--blue); }
+  .node.db{ background:var(--ink); }
+  .node.ai{ background:var(--coral); }
+  .node.sched{ background:#7a5cd6; }
+  .node.mail{ background:var(--green); }
+  .node small{ display:block; font-weight:400; font-size:10px; opacity:.85; margin-top:2px; }
+
+  code.mono{ font-family:"SF Mono","Menlo",monospace; }
+
+  .step-line{ display:flex; gap:10px; align-items:flex-start; }
+  .step-line .n{
+    flex:0 0 26px; height:26px; border-radius:50%; background:var(--ink); color:var(--yellow);
+    font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center;
+  }
+  .step-line .n.yellow{ background:var(--yellow); color:var(--ink); }
+
+  .badge{ display:inline-block; padding:6px 12px; border-radius:8px; background:var(--yellow); color:var(--ink); font-weight:800; font-size:13px; }
+
+  .urlbox{
+    font-family:"SF Mono","Menlo",monospace; font-size:13px;
+    background:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:8px 12px; color:var(--blue); display:inline-block;
+  }
+  .slide.dark .urlbox{ background:#13234d; border-color:#22347f; color:#9db4ff; }
+
+  .shot{ display:block; max-width:106mm; max-height:92mm; width:auto; height:auto; border-radius:10px; border:1px solid var(--line); }
+  .slide.dark .shot{ border:1px solid #22347f; }
+  .shotside{ font-size:13.5px; line-height:1.5; }
+  .shotside li{ color:var(--ink); }
+  .capline{ font-size:12px; color:var(--muted); text-align:center; margin-top:8px; }
+</style>
+</head>
+<body>
+
+<!-- 1 · ТИТУЛ -->
+<section class="slide dark">
+  <div style="position:absolute; top:20mm; right:26mm; width:120px; height:120px; border-radius:24px; background:linear-gradient(135deg,var(--coral),var(--yellow)); opacity:.85;"></div>
+  <div style="position:absolute; top:54mm; right:44mm; width:60px; height:60px; border-radius:18px; background:var(--blue); opacity:.7;"></div>
+
+  <div style="position:absolute; top:34mm; left:26mm; right:130mm;">
+    <div class="kicker">Демо для преподавателей кафедры · НИТУ МИСИС</div>
+    <h1 style="font-size:60px; margin-top:6px;">SMM Testing</h1>
+    <p style="font-size:19px; margin-top:12px; color:#c8d0ee; max-width:150mm; line-height:1.45;">
+      Онлайн-тестирование студентов по вашим лекциям —<br>
+      с автогенерацией вопросов из PDF, аналитикой ошибок<br>
+      и автоматическим допуском к зачёту.
+    </p>
+    <p style="margin-top:18px;">
+      <span class="badge">Ищу пилотный курс на осень 2026/27</span>
+    </p>
+  </div>
+
+  <div style="position:absolute; bottom:18mm; left:26mm; font-size:13px; color:#9aa6cc;">
+    <strong style="color:#fff;">Павел Васильевич Кариков</strong> · преподаватель курса «Взаимодействие с социальными медиа» · karikov.pv@misis.ru
+  </div>
+</section>
+
+<!-- 2 · ПРОБЛЕМА -->
+<section class="slide">
+  <div class="kicker">01 · Что даёт сервис преподавателю</div>
+  <h2>Проверка знаний отнимает часы. Сервис возвращает их вам</h2>
+  <div class="accentbar"></div>
+
+  <div class="grid2" style="margin-top:6px;">
+    <div>
+      <p class="lead" style="margin-bottom:12px;">Обычный цикл на поток из нескольких групп: опрос, проверочные, Excel-таблицы, ручной подсчёт допуска.</p>
+      <ul class="clean">
+        <li class="coral">Часы ручной проверки после каждой лекции</li>
+        <li class="coral">Сомнения: списал студент или знает материал?</li>
+        <li class="coral">Допуск к зачёту вручную по сводным таблицам</li>
+        <li class="coral">Не видно, на каких вопросах провалился весь поток</li>
+        <li class="coral">Составление тестов — отдельная рутинная работа</li>
+      </ul>
+    </div>
+    <div class="card tint">
+      <h3 style="margin-bottom:8px;">Что получает преподаватель</h3>
+      <ul class="clean">
+        <li class="green">Тест по каждой лекции — вопрос создаётся из вашего же PDF за минуты</li>
+        <li class="green">Проверка и зачёт/незачёт автоматически, по одним правилам для всех</li>
+        <li class="green">Полная картина: кто, когда, сколько попыток, допуск к зачёту</li>
+        <li class="green">Аналитика ошибок по сложности — видно, где лекция «не зашла»</li>
+        <li class="green">Выгрузка допуска в CSV одной кнопкой</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid4" style="margin-top:14px;">
+    <div class="card" style="text-align:center;"><div class="num">9</div><div class="numlabel">тестов открыто</div></div>
+    <div class="card" style="text-align:center;"><div class="num">10</div><div class="numlabel">вопросов в тесте</div></div>
+    <div class="card" style="text-align:center;"><div class="num">3 мин</div><div class="numlabel">таймер на тест</div></div>
+    <div class="card" style="text-align:center;"><div class="num coral">81/90</div><div class="numlabel">критерий допуска</div></div>
+  </div>
+
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>2 / 17</span></div>
+</section>
+
+<!-- 3 · КАК УСТРОЕН СЕРВИС -->
+<section class="slide">
+  <div class="kicker">02 · Сервис целиком</div>
+  <h2>Два кабинета: студент и преподаватель</h2>
+  <div class="accentbar"></div>
+
+  <div class="grid2" style="margin-top:4px;">
+    <div class="card">
+      <h3 style="margin-bottom:6px;">🎓 Кабинет студента</h3>
+      <ul class="clean">
+        <li>Вход по корпоративной почте <code class="mono">@misis.ru</code></li>
+        <li>Прогресс по 9 тестам и истории попыток</li>
+        <li>Прохождение по одному вопросу с таймером</li>
+        <li>Автоматический разбор каждой попытки</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:6px;">📋 Кабинет преподавателя</h3>
+      <ul class="clean">
+        <li>Создание тестов: вручную, из JSON, из вашего PDF</li>
+        <li>Расписание опубликования тестов</li>
+        <li>Аналитика ошибок и разбор любой попытки</li>
+        <li>Журнал допуска с экспортом в CSV</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="arch" style="margin-top:16px;">
+    <div class="col" style="max-width:66mm;">
+      <div class="node client">Браузер<small>кабинеты студента и преподавателя</small></div>
+      <div class="node mail">SMTP<small>письма с результатом на @misis.ru</small></div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="col" style="max-width:66mm;">
+      <div class="node app">FastAPI<small>тесты · попытки · допуска</small></div>
+      <div class="node db">SQLite<small>все результаты локально</small></div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="col" style="flex:1;">
+      <div class="node ai">AI-модель<small>автогенерация 10 вопросов из PDF лекции</small></div>
+      <div class="node sched" style="background:#7a5cd6;">Расписание<small>опубликование / закрытие теста</small></div>
+    </div>
+  </div>
+
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>3 / 17</span></div>
+</section>
+
+<!-- 4 · ЧТО ВИДИТ СТУДЕНТ: КАБИНЕТ -->
+<section class="slide">
+  <div class="kicker">03 · Демо · кабинет студента</div>
+  <h2>Прогресс по всему курсу — на одном экране</h2>
+  <div class="accentbar"></div>
+  <p class="lead" style="font-size:13.5px;">Студент видит все 9 тестов курса, результат каждой попытки и порог зачёта — в одном кабинете.</p>
+  <div class="grid2" style="margin-top:10px; align-items:center;">
+    <img class="shot" src="screenshots/demo_student_cabinet.png" alt="Кабинет студента" style="margin:0 auto;">
+    <ul class="clean shotside">
+      <li>Вход по почте <strong>@misis.ru</strong> — устанавливать ничего не нужно</li>
+      <li>Статус каждой попытки виден сразу: <span style="color:var(--green); font-weight:700;">зачёт</span> / <span style="color:var(--coral); font-weight:700;">незачёт</span></li>
+      <li>Перепрохождение — с кулдауном 24 ч: честные правила для всех</li>
+      <li>Порог зачёта <strong>7/10</strong> — один и тот же для всей группы</li>
+    </ul>
+  </div>
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>4 / 17</span></div>
+</section>
+
+<!-- 5 · ДЕМО: ВОПРОС -->
+<section class="slide">
+  <div class="kicker">04 · Демо · прохождение теста</div>
+  <h2>По одному вопросу, таймер 3 минуты — как на семинаре</h2>
+  <div class="accentbar"></div>
+  <p class="lead" style="font-size:13.5px;">Таймер задаёт темп: 180 секунд на тест, последние 30 — красный счётчик.</p>
+  <div class="grid2" style="margin-top:10px; align-items:center;">
+    <img class="shot" src="screenshots/demo_test_question.png" alt="Вопрос с таймером" style="margin:0 auto;">
+    <ul class="clean shotside">
+      <li>Один вопрос на экране — «пролистать всё» не получится</li>
+      <li>Таймер <strong>180 секунд</strong>, финальные 30 подсвечены красным</li>
+      <li>Назад вернуться нельзя — ответ фиксируется навсегда</li>
+      <li>Таймаут = кулдаун 24 ч. Время вышло — приходит через сутки</li>
+    </ul>
+  </div>
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>5 / 17</span></div>
+</section>
+
+<!-- 6 · ДЕМО: РЕЗУЛЬТАТ -->
+<section class="slide">
+  <div class="kicker">05 · Демо · результат попытки</div>
+  <h2>Результат сразу — с разбором каждого вопроса</h2>
+  <div class="accentbar"></div>
+  <p class="lead" style="font-size:13.5px;">Балл и зачёт появляются моментально — сразу после последнего ответа.</p>
+  <div class="grid2" style="margin-top:10px; align-items:center;">
+    <img class="shot" src="screenshots/demo_test_result.png" alt="Разбор результата" style="margin:0 auto;">
+    <ul class="clean shotside">
+      <li>Зачёт при <strong>7/10</strong> — правило одно для всех</li>
+      <li>В зачёт идёт <strong>лучшая попытка</strong> студента</li>
+      <li>Разбор: ваш ответ и правильный — по каждому вопросу</li>
+      <li>Уровень сложности каждого вопроса — на виду</li>
+    </ul>
+  </div>
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>6 / 17</span></div>
+</section>
+
+<!-- 7 · ДЕМО: КАБИНЕТ ПРЕПОДАВАТЕЛЯ -->
+<section class="slide">
+  <div class="kicker">06 · Демо · кабинет преподавателя</div>
+  <h2>Тест создаётся тремя способами — от формы до вашего PDF</h2>
+  <div class="accentbar"></div>
+  <p class="lead" style="font-size:13.5px;">Один экран: статистика, три способа создания тестов, журнал попыток.</p>
+  <div class="grid2" style="margin-top:10px; align-items:center;">
+    <img class="shot" src="screenshots/demo_teacher_dashboard.png" alt="Кабинет преподавателя" style="margin:0 auto;">
+    <ul class="clean shotside">
+      <li>Создание теста: <strong>вручную</strong> / из JSON / из PDF лекции</li>
+      <li>Публикация в один клик — тест открывается группе</li>
+      <li>Статус каждого теста: черновик / расписание / открыт</li>
+      <li>Все попытки видны сразу после сдачи</li>
+    </ul>
+  </div>
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>7 / 17</span></div>
+</section>
+
+<!-- 8 · ДЕМО: АНАЛИТИКА ОШИБОК -->
+<section class="slide">
+  <div class="kicker">07 · Демо · аналитика</div>
+  <h2>Аналитика ошибок — видно, где лекция «не зашла»</h2>
+  <div class="accentbar"></div>
+  <p class="lead" style="font-size:13.5px;">Ниже — реальные данные демо-потока по трём уровням сложности.</p>
+  <div class="grid2" style="margin-top:10px; align-items:center;">
+    <img class="shot" src="screenshots/demo_teacher_analytics.png" alt="Аналитика ошибок" style="margin:0 auto;">
+    <ul class="clean shotside">
+      <li>Лёгкий — <strong>18.8%</strong> ошибок (3/16)</li>
+      <li>Средний — <strong>0.0%</strong> ошибок (0/16)</li>
+      <li>Логика — <span style="color:var(--coral); font-weight:700;">25.0%</span> ошибок (2/8)</li>
+      <li>Вывод: проблема не в запоминании фактов, а в понимании принципов</li>
+    </ul>
+  </div>
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>8 / 17</span></div>
+</section>
+
+<!-- 9 · ДЕМО: ДОПУСК -->
+<section class="slide">
+  <div class="kicker">08 · Демо · допуск к зачёту</div>
+  <h2>Допуск к зачёту — по формуле, без Excel</h2>
+  <div class="accentbar"></div>
+  <p class="lead" style="font-size:13.5px;">Кнопка «⬇ Экспорт CSV» выгружает готовую сводную ведомость.</p>
+  <div class="grid2" style="margin-top:10px; align-items:center;">
+    <img class="shot" src="screenshots/demo_teacher_admission.png" alt="Допуск к зачёту" style="margin:0 auto;">
+    <ul class="clean shotside">
+      <li>Критерий: все <strong>9 тестов</strong> + <strong>81 правильный из 90</strong></li>
+      <li>В зачёт идёт лучшая попытка по каждому тесту</li>
+      <li>Статус каждого студента обновляется сам</li>
+      <li>Не допущен — тоже видно сразу, с точной причиной</li>
+    </ul>
+  </div>
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>9 / 17</span></div>
+</section>
+
+<!-- 10 · AI БЕЗ VPN -->
+<section class="slide">
+  <div class="kicker">09 · Требование кафедры · без VPN</div>
+  <h2>AI-генерация работает в РФ: GigaChat, YandexGPT, Qwen и DeepSeek</h2>
+  <div class="accentbar"></div>
+
+  <p class="lead" style="margin-bottom:10px;">Все вопросы можно генерировать без VPN — на отечественных и китайских моделях, доступных в РФ. API OpenAI-совместимый: меняется только ключ и адрес.</p>
+
+  <table class="tech">
+    <tr><th>Модель</th><th>Где доступна (без VPN)</th><th>Цена, ₽ / 1000 токенов</th><th>Комментарий</th></tr>
+    <tr><td>GigaChat Lite / Pro</td><td>Сбер, API напрямую</td><td>0,065 / 0,50</td><td>Дешевле всего; есть эмодзи-выборка и «ai-check» для проверки текста</td></tr>
+    <tr><td>YandexGPT Lite</td><td>Yandex AI Studio</td><td>0,20</td><td>Отечественный вариант «на всякий случай»</td></tr>
+    <tr><td>Qwen3-235B</td><td>через Яндекс AI Studio</td><td>0,50</td><td>«Китайская нейронка» из списка кафедры</td></tr>
+    <tr><td>DeepSeek V3.2 / V4 Flash</td><td>через Яндекс / proxyapi</td><td>0,30–0,80</td><td>Сильная модель на русском, без VPN</td></tr>
+    <tr><td>Режим MOCK</td><td>—</td><td>бесплатно</td><td>Шаблонные вопросы — тест системы без нейронки</td></tr>
+  </table>
+
+  <div class="grid3" style="margin-top:12px;">
+    <div class="card tint" style="text-align:center;">
+      <div class="num" style="font-size:30px;">~1 ₽</div>
+      <div class="numlabel">один тест (10 вопросов) на GigaChat Lite</div>
+    </div>
+    <div class="card tint" style="text-align:center;">
+      <div class="num coral" style="font-size:30px;">~10 ₽</div>
+      <div class="numlabel">весь семестр из 9 тестов</div>
+    </div>
+    <div class="card tint" style="text-align:center;">
+      <div class="num" style="font-size:30px;">0</div>
+      <div class="numlabel">VPN-подключений у вас и у студентов</div>
+    </div>
+  </div>
+
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>10 / 17</span></div>
+</section>
+
+<!-- 11 · PROXYAPI -->
+<section class="slide">
+  <div class="kicker">10 · Продвинутый вариант · proxyapi.ru</div>
+  <h2>Передовые американские модели — без VPN и в рублях</h2>
+  <div class="accentbar"></div>
+
+  <div class="grid2" style="margin-top:4px;">
+    <div>
+      <p class="lead" style="margin-bottom:10px;">Российский прокси-сервис к API OpenAI, Anthropic, Gemini и DeepSeek. Работает из РФ без VPN — запросы идёт через цепочку прокси-серверов в Европе.</p>
+      <ul class="clean">
+        <li>OpenAI-совместимый API: меняю только base URL и ключ, код остаётся</li>
+        <li>Оплата в рублях: счёт юрлицу, договор, ЭДО</li>
+        <li>GPT-4o-mini — та самая модель, на которой тест уже сделан</li>
+        <li>Регистрация и выдача ключей — в личном кабинете console.proxyapi.ru</li>
+        <li>Резерв для случая, когда отечественных моделей станет мало</li>
+      </ul>
+    </div>
+    <div class="card tint">
+      <h3 style="margin-bottom:8px;">Переключение провайдера</h3>
+      <code class="mono" style="display:block; font-size:12.5px; line-height:1.6; color:var(--ink);">
+        <div style="color:var(--muted);"># было (OpenAI через proxyapi)</div>
+        <div>BASE_URL = "https://api.proxyapi.ru/openai/v1"</div>
+        <div>API_KEY = "sk-..."</div>
+        <div style="margin-top:8px; color:var(--muted);"># стало (GigaChat)</div>
+        <div>BASE_URL = "https://gigachat.ru/api/v1"</div>
+        <div>API_KEY = "ключ из Сбер"</div>
+      </code>
+      <p class="muted" style="font-size:12px; margin-top:10px;">Весь код генератора не меняется — 2 строки настроек.</p>
+    </div>
+  </div>
+
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>11 / 17</span></div>
+</section>
+
+<!-- 12 · ЧЕСТНЫЕ ДЕНЬГИ -->
+<section class="slide">
+  <div class="kicker">11 · Требование кафедры · честно о деньгах</div>
+  <h2>Сервис не бесплатный: платно и API и сопровождение</h2>
+  <div class="accentbar"></div>
+
+  <div class="grid2" style="margin-top:4px;">
+    <div class="card">
+      <h3 style="margin-bottom:8px;">Всегда платно: API-ключ</h3>
+      <ul class="clean">
+        <li class="coral">Нейронка для генерации вопросов — платная услуга, у Сбера минимум 600 ₽/мес, у Яндекса — оплата по факту использования</li>
+        <li class="coral">API-ключ — ваш, на ваше финансирование или грант кафедры</li>
+        <li class="green">Однако экономия крошечная: на тест из 10 вопросов — примерно 1–3 ₽ (пакет юрлица хватит на годы)</li>
+        <li class="green">Если не генерировать новых вопросов, ключ можно вообще не пополнять</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:8px;">Платное сопровождение*</h3>
+      <ul class="clean">
+        <li class="coral">Запуск и поддержка на вашем домене, обновления, обучение — это моя работа, и она требует времени</li>
+        <li class="coral">Абонентская плата обсуждается индивидуально (не сейчас, не бесплатно)</li>
+        <li class="green">Сам сервис — мой проект: без корпоративных лицензий и навязанных подписок</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="muted" style="font-size:11.5px; margin-top:10px;">*Сопровождение платное — кроме одного случая: см. «Пилотная программа» на следующем слайде.</p>
+
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>12 / 17</span></div>
+</section>
+
+<!-- 13 · ПИЛОТНАЯ ПРОГРАММА -->
+<section class="slide">
+  <div class="kicker">12 · Пилотная программа · осень 2026/27</div>
+  <h2>Пилотному преподавателю сопровождение бесплатно</h2>
+  <div class="accentbar"></div>
+
+  <p class="lead" style="margin-bottom:12px;">Я ищу один курс на осенний семестр 2026/27, где сервис запустится «в бою». Пилот — бесплатный для вас, кроме API-ключа нейронки.</p>
+
+  <div class="step-line" style="margin-bottom:10px;">
+    <div class="n">✓</div>
+    <div><strong style="font-size:15px;">Бесплатно для пилотного преподавателя</strong>
+      <ul class="clean" style="margin-top:6px;">
+        <li>Настройка и запуск сервиса на вашем курсе (без VPN, на вашей модели из таблицы выше)</li>
+        <li>Первая генерация тестов по вашим PDF-лекциям</li>
+        <li>Обучение работы в кабинете преподавателя (30 минут)</li>
+        <li>Поддержка в течение семестра, выгрузки и отчёты по каждому модулю</li>
+        <li>Результаты пилота — в совместный научный-методический доклад (если интересно кафедре)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step-line">
+    <div class="n yellow">₽</div>
+    <div><strong style="font-size:15px;">Единственное, что оплачивает преподаватель</strong>
+      <ul class="clean" style="margin-top:6px;">
+        <li>API-ключ нейронки — от <strong>~10 ₽ за семестр</strong> на GigaChat Lite или от <strong>50 ₽</strong> на Яндекс-моделях</li>
+        <li>Платное сопровождение после успешного пилота — обсуждаем вместе после семестра</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>13 / 17</span></div>
+</section>
+
+<!-- 14 · ROADMAP -->
+<section class="slide">
+  <div class="kicker">13 · Если пилот удастся · roadmap</div>
+  <h2>Куда двигается сервис — по реальным запросам кафедры</h2>
+  <div class="accentbar"></div>
+
+  <div class="grid4" style="margin-top:8px;">
+    <div class="card">
+      <div class="ico">1</div>
+      <h3 style="font-size:14px;">Вход через корпусную почту МИСИС</h3>
+      <p class="muted" style="font-size:12px; margin-top:6px;">Настоящая корпоративная почта вместо ручной регистрации: логины студентам приходят сами.</p>
+    </div>
+    <div class="card">
+      <div class="ico">2</div>
+      <h3 style="font-size:14px;">Подключение к Moodle</h3>
+      <p class="muted" style="font-size:12px; margin-top:6px;">Тесты и результаты — прямо внутри системы Moodle, к которой кафедра уже привыкла.</p>
+    </div>
+    <div class="card">
+      <div class="ico">3</div>
+      <h3 style="font-size:14px;">Защита от списывания</h3>
+      <p class="muted" style="font-size:12px; margin-top:6px;">Перемешивание вопросов и вариантов, блокировка копирования, контроль передачи попытки сокурсникам.</p>
+    </div>
+    <div class="card">
+      <div class="ico">4</div>
+      <h3 style="font-size:14px;">Анти-AI на прохождении</h3>
+      <p class="muted" style="font-size:12px; margin-top:6px;">Серверные признаки использования нейронки при ответах: аномально быстрый ввод, поведение сессии, анализ текста.</p>
+    </div>
+  </div>
+
+  <div class="card tint" style="margin-top:14px;">
+    <p style="font-size:13.5px;"><strong>Пилот — это и есть вход в этот roadmap:</strong> каждый пункт добавляется по запросу реального курса, на реальных данных, а не по воображению.</p>
+  </div>
+
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>14 / 17</span></div>
+</section>
+
+<!-- 15 · ЧАСТЫЙ ВОПРОС КАФЕДРЫ: MOODLE -->
+<section class="slide">
+  <div class="kicker">14 · Вопрос кафедры · как это соотносится с Moodle</div>
+  <h2>Не вместо Moodle — вместе с Moodle</h2>
+  <div class="accentbar"></div>
+
+  <table class="tech">
+    <thead><tr><th>Задача</th><th>Moodle</th><th>SMM Testing</th></tr></thead>
+    <tbody>
+      <tr><td>Поддержка и надёжность</td><td>Сервер, SSO, бэкапы — силами университета</td><td>Личный проект: запуск на Render и далее на VPS кафедры</td></tr>
+      <tr><td>Оценки → ведомость</td><td>Автоматически, в журнал и банк оценок</td><td>Выгрузка CSV; автопубликация в Moodle — в roadmap</td></tr>
+      <tr><td>Создание тестов</td><td>Банк вопросов наполняется вручную — часы на один тест</td><td>Ваши PDF-лекции → готовый тест за минуты, вы только ревьюите</td></tr>
+      <tr><td>Обмен ответами в чатах</td><td>Рандомизация фиксированного пула — скриншоты сокурсников остаются рабочими</td><td>Персональный набор вопросов в каждой попытке — roadmap (следующий слайд)</td></tr>
+      <tr><td>Изменения под запрос курса</td><td>Заявка в IT-отдел вуза — недели и месяцы</td><td>Правка за часы, под конкретный курс</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card tint" style="margin-top:12px;">
+    <p style="font-size:13.5px; line-height:1.45;"><strong>Пилотная модель:</strong> тестирование идёт в SMM Testing, оценки и ведомость — в Moodle (автопубликация или CSV-импорт). Кафедра остаётся в своей системе, но получает тесты, которые вручную наполнять невозможно.</p>
+  </div>
+
+  <p class="muted" style="font-size:10.5px; margin-top:9px; line-height:1.45;">* Moodle — западная разработка (разработчик — Moodle Pty Ltd, Австралия). Прецедент уже есть: MS Teams прекратил работу в РФ в 2025 году. Гарантий, что лицензия Moodle не будет отозвана аналогичным образом, нет — а собственный сервис этот риск исключает: код и данные студентов остаются на вашей инфраструктуре на территории РФ.</p>
+
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>15 / 17</span></div>
+</section>
+
+<!-- 16 · ЧАСТЫЙ ВОПРОС КАФЕДРЫ: ПЕРСОНАЛЬНЫЕ НАБОРЫ ВОПРОСОВ -->
+<section class="slide">
+  <div class="kicker">15 · Вопрос кафедры · свой тест для каждого студента</div>
+  <h2>Да: у каждого студента свой набор вопросов по каждой лекции</h2>
+  <div class="accentbar"></div>
+
+  <p class="lead" style="margin-bottom:10px;">Генератор уже создаёт вопросы из вашего PDF. Сегодня он делает один набор из 10 — расширение до персональных наборов меняет режим работы генератора, а не архитектуру сервиса.</p>
+
+  <div class="grid3">
+    <div class="card">
+      <div class="ico">1</div>
+      <h3 style="font-size:14px;">Генерация банка</h3>
+      <p class="muted" style="font-size:12px; margin-top:6px;">AI создаёт банк 50–100 вопросов по вашей лекции за минуты. Формулировки — разные, источник — один и тот же PDF.</p>
+    </div>
+    <div class="card">
+      <div class="ico">2</div>
+      <h3 style="font-size:14px;">Ревью преподавателем</h3>
+      <p class="muted" style="font-size:12px; margin-top:6px;">Вы просматриваете банк: «ок» / «переделать», помечаете сложность. Полчаса на лекцию — один раз за весь курс.</p>
+    </div>
+    <div class="card">
+      <div class="ico">3</div>
+      <h3 style="font-size:14px;">Сборка на попытку</h3>
+      <p class="muted" style="font-size:12px; margin-top:6px;">При старте каждой попытки — случайные 10 из банка. У каждого студента свой тест, и каждая попытка — новый.</p>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:12px;">
+    <div class="card tint">
+      <h3 style="font-size:14px; margin-bottom:6px;">Почему не генерировать «на лету»?</h3>
+      <p class="muted" style="font-size:12px; line-height:1.5;">Персональная генерация прямо при входе студента дала бы 15–40 секунд ожидания на первой странице теста и наборы, которые физически невозможно отревьюить. Банк с ревью сохраняет скорость и справедливость: порог зачёта 7/10 остаётся честным для всех.</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:14px; margin-bottom:6px;">Что это меняет</h3>
+      <ul class="clean">
+        <li class="green">Обмен ответами и скриншотами в чатах перестаёт работать</li>
+        <li class="green">Стоимость — те же ~1–3 ₽ за лекцию: банк обслуживает курс годами</li>
+        <li class="coral">Добавляется в roadmap: кнопка «догенерировать банк» в кабинете преподавателя</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer"><span>SMM Testing · Демо для кафедры</span><span>16 / 17</span></div>
+</section>
+
+<!-- 17 · CTA -->
+<section class="slide dark">
+  <div style="position:absolute; top:20mm; right:26mm; width:120px; height:120px; border-radius:24px; background:linear-gradient(135deg,var(--coral),var(--yellow)); opacity:.85;"></div>
+  <div style="position:absolute; top:54mm; right:44mm; width:60px; height:60px; border-radius:18px; background:var(--blue); opacity:.7;"></div>
+
+  <div style="position:absolute; top:36mm; left:26mm; right:130mm;">
+    <div class="kicker">Предложение для одной команды курса</div>
+    <h1 style="font-size:46px; line-height:1.15;">Хочу быть пилотным курсом осени 2026/27</h1>
+    <p style="font-size:17px; margin-top:14px; color:#c8d0ee; max-width:150mm; line-height:1.5;">
+      Если после демо вам интересно запускать сервис на своём курсе — напишите мне.
+      Своё время, настройка, обучение и поддержка: <strong style="color:#fff;">бесплатно для пилота</strong>.
+      Единственная оплата — API-ключ нейронки, порядка десятка рублей за семестр.
+    </p>
+  </div>
+
+  <div style="position:absolute; bottom:40mm; left:26mm;">
+    <span class="urlbox">pavelkoff@gmail.com</span>
+    <span class="urlbox" style="margin-left:10px;">https://www.marketing-ai-pk.ru/</span>
+  </div>
+
+  <div style="position:absolute; bottom:18mm; left:26mm; font-size:13px; color:#9aa6cc;">
+    <strong style="color:#fff;">Павел Васильевич Кариков</strong> · преподаватель курса «Взаимодействие с социальными медиа» · НИТУ МИСИС
+  </div>
+</section>
+
+</body>
+</html>
